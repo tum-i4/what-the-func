@@ -1,0 +1,31 @@
+{
+  "name": "what-the-func",
+  "version": "1.0.0",
+  "description": "A simple C++ function parser/tagger based on tree-sitter.",
+  "main": "src/index.ts",
+  "bin": {
+    "what-the-func": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ./dist/index.js",
+    "package": "npm run build && pkg . --output ./dist/what-the-func",
+    "test": "jest"
+  },
+  "author": "Daniel Elsner <daniel.elsner@tum.de>",
+  "license": "Apache 2.0",
+  "dependencies": {
+    "tree-sitter": "^0.20.0",
+    "tree-sitter-cpp": "^0.20.0",
+    "yargs": "^17.5.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.5.1",
+    "@types/node": "^17.0.35",
+    "@types/yargs": "^17.0.10",
+    "jest": "^28.1.0",
+    "pkg": "^5.7.0",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.4"
+  }
+}
