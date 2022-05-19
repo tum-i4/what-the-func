@@ -26,5 +26,5 @@ $ npm run test  # executes jest test suite
 ## Package
 
 ```shell
-$ npm run package  # builds executable `what-the-func` binary for current platform (into ./dist)
+$ npm run package  # builds project and generates executable `what-the-func` binary for current platform (into ./dist)
 ```
