@@ -100,7 +100,7 @@ namespace x {
 });
 
 test('parse complex C++ file', () => {
-    const file = path.resolve(__dirname, "..", "test", "test.cpp");
+    const file = path.resolve(__dirname, "test.cpp");
     expect(parseSourceCode(readFileSync(file).toString())).toEqual([
         createCppFunction("weird_add(int a, int b)", 10, 13),
         createCppFunction("CustomPair(T first, T second)", 21, 24, [], "CustomPair", "templates"),
