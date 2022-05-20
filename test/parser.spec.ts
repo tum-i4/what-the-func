@@ -97,18 +97,184 @@ namespace x {
             createCppFunction("A::foo2()", 24, 24, [], undefined, "x"),
         ]);
     });
+
+    test('support macro functions', () => {
+        expect(parseSourceCode(`
+#define FOO 123
+#define MAX(a,b) a > b ? a:b
+void foo() {} 
+`)).toEqual([
+            createCppFunction("MAX", 2, 2, ['macro']),
+            createCppFunction("foo()", 3, 3)
+        ]);
+    });
+
+    test('functions with const return type', () => {
+        expect(parseSourceCode(`
+const auto& foo(int a) { return 1; }
+`)).toEqual([
+            createCppFunction("& foo(int a)", 1, 1)
+        ]);
+    });
+
+    test('const functions', () => {
+        expect(parseSourceCode(`
+void foo() const {}
+`)).toEqual([
+            createCppFunction("foo()", 1, 1, ['const'])
+        ]);
+    });
+
+    test('decltype functions', () => {
+        expect(parseSourceCode(`
+int x = 1;
+decltype(auto) foo() { return x; }
+`)).toEqual([
+            createCppFunction("foo()", 2, 2)
+        ]);
+    });
+
+    test('static functions', () => {
+        expect(parseSourceCode(`
+static void foo() { return x; }
+struct A {
+    static void foo(int a) {}
+};
+`)).toEqual([
+            createCppFunction("foo()", 1, 1, ['static']),
+            createCppFunction("foo(int a)", 3, 3, ['static'], 'A')
+        ]);
+    });
+
+    test('volatile functions', () => {
+        expect(parseSourceCode(`
+struct A {
+    void foo(int a) volatile {}
+};
+`)).toEqual([
+            createCppFunction("foo(int a)", 2, 2, ['volatile'], 'A')
+        ]);
+    });
+
+    test('inline functions', () => {
+        expect(parseSourceCode(`
+inline int foo(int a, int b)
+{
+    return a + b;
+}
+`)).toEqual([
+            createCppFunction("foo(int a, int b)", 1, 4)
+        ]);
+    });
+
+    test('virtual/override functions', () => {
+        expect(parseSourceCode(`
+struct Base
+{
+    virtual void f()
+    {
+    }
+};
+ 
+struct Derived : Base
+{
+    void f() override // 'override' is optional
+    {
+    }
+};
+`)).toEqual([
+            createCppFunction("f()", 3, 5, ['virtual'], "Base"),
+            createCppFunction("f()", 10, 12, ['override'], "Derived"),
+        ]);
+    });
+
+    test('template functions', () => {
+        expect(parseSourceCode(`
+template<class T>
+auto foo(T t) { return t; }
+`)).toEqual([
+            createCppFunction("foo(T t)", 2, 2, ['template'])
+        ]);
+    });
+
+    test('complex template functions', () => {
+        expect(parseSourceCode(`
+template<typename... Variadic, typename ...Args>
+constexpr void invoke(auto (*fun)(Variadic......), Args... args)
+{
+    fun(args...);
+}
+`)).toEqual([
+            createCppFunction("invoke(auto (*fun)(Variadic......), Args... args)", 1, 5, ['template'])
+        ]);
+    });
+
+    test('template de-/constructors', () => {
+        expect(parseSourceCode(`
+template<class T> struct A
+{
+    explicit A(const T&, ...) noexcept {};
+    A(T&&, ...) {};
+    A<T>(T&&, ...) {};
+    ~A() {};
+    
+    template<class Iter>
+    auto bar(Iter b, Iter e)
+    {
+        return X<typename Iter::value_type>(b, e); // must specify what we want
+    }
+};
+`)).toEqual(expect.arrayContaining([
+            createCppFunction("A(const T&, ...) noexcept", 3, 3, [], "A"),
+            createCppFunction("A(T&&, ...)", 4, 4, [], "A"),
+            createCppFunction("A<T>(T&&, ...)", 5, 5, [], "A"),
+            createCppFunction("~A()", 6, 6, [], "A"),
+            createCppFunction("bar(Iter b, Iter e)", 9, 12, ['template'], "A"),
+        ]));
+    });
+
+    test('operator overloading', () => {
+        expect(parseSourceCode(`
+struct X {
+    X& operator++()
+    {
+        return *this;
+    }
+    
+    X& operator+=(const X& rhs)
+    {
+        return *this;
+    }
+    
+    friend X operator+(X lhs,
+                     const X& rhs)
+    {
+        lhs += rhs;
+        return lhs;
+    }
+    
+    void operator()(int n) { printf(n); }
+};
+`)).toEqual([
+            createCppFunction("& operator++()", 2, 5, [], "X"),
+            createCppFunction("& operator+=(const X& rhs)", 7, 10, [], "X"),
+            createCppFunction("operator+(X lhs, X& rhs)", 12, 17, ['const'], "X"),
+            createCppFunction("operator()(int n)", 19, 19, [], "X"),
+        ]);
+    });
 });
 
 test('parse complex C++ file', () => {
     const file = path.resolve(__dirname, "test.cpp");
     expect(parseSourceCode(readFileSync(file).toString())).toEqual([
+        createCppFunction("MAX", 5, 7, ["macro"]),
         createCppFunction("weird_add(int a, int b)", 10, 13),
         createCppFunction("CustomPair(T first, T second)", 21, 24, [], "CustomPair", "templates"),
         createCppFunction("~CustomPair()", 26, 26, [], "CustomPair", "templates"),
         createCppFunction("GetMax()", 29, 32, [], "CustomPair", "templates"),
         createCppFunction("GetMax(T a, T b)", 37, 39, [], undefined, "templates"),
         createCppFunction("foo()", 45, 47, [], "A"),
-        createCppFunction("foo() override", 54, 56, [], "C"),
+        createCppFunction("foo()", 54, 56, ['override'], "C"),
         createCppFunction("bar(int c)", 58, 59, [], "C"),
         createCppFunction("baz()", 61, 63, [], "C"),
         createCppFunction("foo()", 73, 73, [], "Foo", "Base"),

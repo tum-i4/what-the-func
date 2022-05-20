@@ -7,11 +7,13 @@ import {existsSync, readFileSync} from 'fs';
 import {parseSourceCode} from './parser';
 
 // Set up simple CLI.
+// We use yargs to be open for future extensions.
 const options: any = yargs(hideBin(process.argv))
     .usage("Usage: <file>")
     .option("file", {alias: "f", describe: "C++ file to analyze", type: "string", demandOption: true})
     .argv;
 
+// Validate input file.
 const {file} = options;
 const cppFilePath = path.resolve(file);
 if (!existsSync(cppFilePath)) {

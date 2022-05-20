@@ -10,10 +10,11 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include":[
-    "src/*"
+  "include": [
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
-    "./test/*"
+    "node_modules"
   ]
 }

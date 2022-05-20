@@ -7,7 +7,7 @@
     "what-the-func": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "start": "npm run build && node ./dist/index.js",
     "package": "pkg . --output ./dist/what-the-func",
     "test": "jest"
