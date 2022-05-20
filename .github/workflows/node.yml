@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         node-version: [ 14.x ]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-20.04, windows-2019, macos-11 ]
 
     runs-on: ${{ matrix.os }}
 
@@ -35,7 +35,6 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
       with:
         msbuild-architecture: x64
-        vs-version: 2019
 
     - name: Install deps
       run: npm ci
