@@ -30,6 +30,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
+    - name: Add msbuild to PATH
+      if: ${{ matrix.os == 'windows-latest' }}
+      uses: microsoft/setup-msbuild@v1.1
+      with:
+        msbuild-architecture: x64
+
     - name: Install deps
       run: npm ci
 
