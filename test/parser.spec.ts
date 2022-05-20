@@ -92,7 +92,7 @@ namespace x {
             createCppFunction("anon()", 5, 5, [], undefined, "anon-id-4-6"),
             createCppFunction("baz()", 10, 10, [], "B", "x"),
             createCppFunction("foo()", 15, 15, [], "A", "x"),
-            createCppFunction("foo1()", 16, 16, [], "A", "x"),
+            createCppFunction("foo1()", 16, 16, ['static'], "A", "x"),
             createCppFunction("bar()", 19, 21, [], "A", "x"),
             createCppFunction("A::foo2()", 24, 24, [], undefined, "x"),
         ]);
@@ -205,7 +205,7 @@ constexpr void invoke(auto (*fun)(Variadic......), Args... args)
     fun(args...);
 }
 `)).toEqual([
-            createCppFunction("invoke(auto (*fun)(Variadic......), Args... args)", 1, 5, ['template'])
+            createCppFunction("invoke(auto (*fun)(Variadic......), Args... args)", 2, 5, ['template'])
         ]);
     });
 
@@ -272,16 +272,16 @@ test('parse complex C++ file', () => {
         createCppFunction("CustomPair(T first, T second)", 21, 24, [], "CustomPair", "templates"),
         createCppFunction("~CustomPair()", 26, 26, [], "CustomPair", "templates"),
         createCppFunction("GetMax()", 29, 32, [], "CustomPair", "templates"),
-        createCppFunction("GetMax(T a, T b)", 37, 39, [], undefined, "templates"),
-        createCppFunction("foo()", 45, 47, [], "A"),
+        createCppFunction("GetMax(T a, T b)", 37, 39, ['template'], undefined, "templates"),
+        createCppFunction("foo()", 45, 47, ['virtual'], "A"),
         createCppFunction("foo()", 54, 56, ['override'], "C"),
         createCppFunction("bar(int c)", 58, 59, [], "C"),
         createCppFunction("baz()", 61, 63, [], "C"),
         createCppFunction("foo()", 73, 73, [], "Foo", "Base"),
         createCppFunction("bar()", 79, 79, [], "Bar", "Base"),
-        createCppFunction("Foo<int,int>::foo()", 83, 83, [], undefined, "Base"),
-        createCppFunction("foo(X& x, Y& y)", 87, 90, []),
-        createCppFunction("foo_bar(X& x, Y& y)", 93, 95, []),
+        createCppFunction("Foo<int,int>::foo()", 83, 83, ['template'], undefined, "Base"),
+        createCppFunction("foo(X& x, Y& y)", 87, 90, ['template']),
+        createCppFunction("foo_bar(X& x, Y& y)", 93, 95, ['template']),
         createCppFunction("main()", 97, 97, []),
     ]);
 })
