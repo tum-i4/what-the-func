@@ -23,6 +23,7 @@ const CLASS_IDENTIFIER = "type_identifier";
 const NAMESPACE_DEFINITION = "namespace_definition";
 const NAMESPACE_IDENTIFIER = "identifier";
 const TEMPLATE_DECLARATION = "template_declaration";
+const TEMPLATE_SPECIALIZATION = "template_type";
 const STATIC_SPECIFIER = "storage_class_specifier";
 const VIRTUAL_SPECIFIER = "virtual_function_specifier";
 
@@ -31,7 +32,8 @@ type DeclarationType =
     | typeof FUNCTION_DECLARATION
     | typeof NAMESPACE_IDENTIFIER
     | typeof MACRO_FUNCTION_IDENTIFIER
-    | typeof REFERENCE_DECLARATOR;
+    | typeof REFERENCE_DECLARATOR
+    | typeof TEMPLATE_SPECIALIZATION;
 
 const getIdentifierForDeclarationType: (node: SyntaxNode, type: DeclarationType, fallback?: (node: SyntaxNode) => string) => string = (node, type, fallback = undefined) => {
     for (const child of node.namedChildren) {
@@ -48,17 +50,20 @@ const getIdentifierForDeclarationType: (node: SyntaxNode, type: DeclarationType,
         return fallback(node);
     }
 
-    console.debug(`Could not find identifier for node at line ${node.startPosition.row}.`);
-    // Fall back to using anonymous node identifier.
-    return `anon-id-${node.startPosition.row}-${node.endPosition.row}`;
+    // Fall back to using anonymous node identifier (adjust position to be 1-indexed).
+    return `anon-id-${node.startPosition.row + 1}-${node.endPosition.row + 1}`;
 }
 const getFunctionName: (functionNode: SyntaxNode) => string = (functionNode) => getIdentifierForDeclarationType(functionNode, FUNCTION_DECLARATION, (node) => {
     // In case we don't find a function identifier, it might be entangled with the reference return type.
     // For instance, `const auto& foo() {}` or `Foo& operator++() {}` will result in a reference declarator `& foo()` or `& operator++()`.
     return getIdentifierForDeclarationType(node, REFERENCE_DECLARATOR);
 });
+const getClassName: (classNode: SyntaxNode) => string = (classNode) => getIdentifierForDeclarationType(classNode, CLASS_IDENTIFIER, (node) => {
+    // In case we don't find a struct/class identifier, it could be, that the identifier is actually part of the template type definition.
+    // For instance, `template<> class A<int> {}` will only have a template type `A<int>` defined.
+    return getIdentifierForDeclarationType(node, TEMPLATE_SPECIALIZATION);
+});
 const getMacroFunctionName: (macroFunctionNode: SyntaxNode) => string = (macroFunctionNode) => getIdentifierForDeclarationType(macroFunctionNode, MACRO_FUNCTION_IDENTIFIER);
-const getClassName: (classNode: SyntaxNode) => string = (classNode) => getIdentifierForDeclarationType(classNode, CLASS_IDENTIFIER);
 const getNamespaceIdentifier: (namespaceNode: SyntaxNode) => string = (namespaceNode) => getIdentifierForDeclarationType(namespaceNode, NAMESPACE_IDENTIFIER);
 
 const getParentClassName: (node: SyntaxNode) => string | undefined = (node) => {
@@ -105,15 +110,16 @@ const convertFunctionDefinitionNode: (node: SyntaxNode) => CppFunction = (node) 
     let functionName: string;
     let className = undefined;
     let namespace = undefined;
-    let start = node.startPosition.row;
-    let end = node.endPosition.row;
+    let start = node.startPosition.row + 1;  // we want 1-indexed positions
+    let end = node.endPosition.row + 1;  // we want 1-indexed positions
     let properties: FunctionProperty[] = [];
     if (node.type === MACRO_FUNCTION_DEFINITION) {
         functionName = getMacroFunctionName(node);
         properties.push('macro');
         // Macro functions will always end at the next detected symbol.
         // Therefore, we exclude the line of the next symbol.
-        end = node.endPosition.row - 1;
+        // Note: We adjust by +1 to be 1-indexed and then subtract 1.
+        end = (node.endPosition.row + 1) - 1;
     } else {
         functionName = getFunctionName(node);
         className = getParentClassName(node);
