@@ -48,7 +48,7 @@ const getIdentifierForDeclarationType: (node: SyntaxNode, type: DeclarationType,
         return fallback(node);
     }
 
-    console.warn(`Could not find identifier for node at line ${node.startPosition.row}.`);
+    console.debug(`Could not find identifier for node at line ${node.startPosition.row}.`);
     // Fall back to using anonymous node identifier.
     return `anon-id-${node.startPosition.row}-${node.endPosition.row}`;
 }
