@@ -25,7 +25,11 @@ if (!existsSync(cppFilePath)) {
 try {
     const sourceCode = readFileSync(cppFilePath).toString();
     const functions = parseSourceCode(sourceCode);
-    process.stdout.write(functions.map(o => JSON.stringify(o)).join('\n'));
+    // Before printing to stdout as JSON objects, we add the file attribute.
+    process.stdout.write(functions.map(o => JSON.stringify({
+        ...o,
+        file: cppFilePath
+    })).join('\n'));
 } catch (err) {
     console.error(`Failed to read source file: ${err}`)
     process.exit(1);
