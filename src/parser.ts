@@ -94,7 +94,7 @@ const extractAdditionalFunctionProperties: (functionNode: SyntaxNode) => Functio
             properties.push('template');
         }
     }
-    // Check for static functions.
+    // Check for function specifiers in children.
     for (const child of functionNode.namedChildren) {
         if (child.type === STATIC_SPECIFIER && child.text === 'static') {
             properties.push('static');
@@ -125,7 +125,7 @@ const convertFunctionDefinitionNode: (node: SyntaxNode) => CppFunction = (node) 
         className = getParentClassName(node);
         const namespaces = getParentNamespaces(node, []);
         namespace = namespaces.length > 0 ? namespaces.join("::") : undefined;
-        // Extract 'override' and 'volatile' from function name into properties.
+        // Extract keywords from function name into properties.
         const replaceKeywordFromName = (keyword: FunctionProperty) => {
             if (functionName.includes(` ${keyword}`)) {
                 functionName = functionName
