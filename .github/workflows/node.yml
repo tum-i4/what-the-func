@@ -6,25 +6,47 @@ name: Node.js CI
 on:
   push:
     branches: [ main ]
+    tags:
+      - '*'
   pull_request:
     branches: [ main ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  ci:
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [ 14.x ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run build
-    - run: npm run test
-    - run: npm run package
+
+    - name: Install deps
+      run: npm ci
+
+    - name: Build
+      run: npm run build
+
+    - name: Test
+      run: npm run test
+
+    - name: Package
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      run: npm run package
+
+    - name: Release
+      if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "bin/*"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        replacesArtifacts: true
