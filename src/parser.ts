@@ -69,7 +69,7 @@ const getNamespaceIdentifier: (namespaceNode: SyntaxNode) => string = (namespace
 const getParentClassName: (node: SyntaxNode) => string | undefined = (node) => {
     if (node.parent) {
         if (CLASS_DEFINITIONS.includes(node.parent.type)) {
-            return getClassName(node.parent);  // we do not support nested classes/structs for now.
+            return getClassName(node.parent);  // For nested types, we only use the direct parent.
         }
         return getParentClassName(node.parent);
     }

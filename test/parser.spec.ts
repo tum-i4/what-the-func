@@ -291,6 +291,18 @@ struct X {
             createCppFunction("operator()(int n)", 19, 19, [], "X"),
         ]);
     });
+
+    test('nested structures', () => {
+        expect(parseSourceCode(`
+struct A {
+    struct B {
+        void foo() {}
+    };
+};
+`.trimStart())).toEqual([
+            createCppFunction("foo()", 3, 3, [], "B")
+        ]);
+    });
 });
 
 test('parse complex C++ file', () => {
