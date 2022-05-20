@@ -308,7 +308,7 @@ struct A {
 test('parse complex C++ file', () => {
     const file = path.resolve(__dirname, "test.cpp");
     expect(parseSourceCode(readFileSync(file).toString())).toEqual([
-        createCppFunction("MAX", 6, 8, ["macro"]),
+        createCppFunction("MAX", 6, process.platform === "win32" ? 7 : 8, ["macro"]),
         createCppFunction("weird_add(int a, int b)", 11, 14),
         createCppFunction("CustomPair(T first, T second)", 22, 25, [], "CustomPair", "templates"),
         createCppFunction("~CustomPair()", 27, 27, [], "CustomPair", "templates"),
