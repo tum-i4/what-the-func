@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "start": "npm run build && node ./dist/index.js",
-    "package": "pkg . --output ./bin/what-the-func",
+    "package": "pkg . --out-path ./bin",
     "test": "jest"
   },
   "author": "Daniel Elsner <daniel.elsner@tum.de>",

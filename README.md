@@ -41,7 +41,7 @@ $ npm run test  # executes jest test suite
 ## Package
 
 ```shell
-$ npm run package  # builds project and generates executable `what-the-func` binary for current platform (into ./bin)
+$ npm run package  # builds project and generates executable `what-the-func` binaries (into ./bin)
 ```
 
 ## Contributors
