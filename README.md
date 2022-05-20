@@ -44,4 +44,4 @@ $ npm run package  # builds project and generates executable `what-the-func` bin
 
 ## Contributors
 
-Built and maintained by Daniel Elsner (daniel.elsner<at>tum.de).
+Built and maintained by Daniel Elsner (`daniel.elsner<at>tum.de`).
