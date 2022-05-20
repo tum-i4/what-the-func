@@ -2,7 +2,22 @@ import Parser, {SyntaxNode, Tree} from "tree-sitter";
 
 const Cpp = require("tree-sitter-cpp");
 
-export type FunctionProperty = 'template' | 'macro' | 'static' | 'virtual' | 'override' | 'volatile' | 'const';
+const TEMPLATE_KEYWORD = 'template';
+const MACRO_KEYWORD = 'macro';
+const STATIC_KEYWORD = 'static';
+const VIRTUAL_KEYWORD = 'virtual';
+const OVERRIDE_KEYWORD = 'override';
+const VOLATILE_KEYWORD = 'volatile';
+const CONST_KEYWORD = 'const';
+
+export type FunctionProperty =
+    typeof TEMPLATE_KEYWORD
+    | typeof MACRO_KEYWORD
+    | typeof STATIC_KEYWORD
+    | typeof VIRTUAL_KEYWORD
+    | typeof OVERRIDE_KEYWORD
+    | typeof VOLATILE_KEYWORD
+    | typeof CONST_KEYWORD;
 
 export type CppFunction = {
     name: string;
@@ -13,7 +28,7 @@ export type CppFunction = {
     properties: FunctionProperty[];
 }
 
-const REFERENCE_DECLARATOR = "reference_declarator";
+const REFERENCE_DECLARATOR = "reference_declarator";  // &
 const FUNCTION_DECLARATION = "function_declarator";
 const FUNCTION_DEFINITION = "function_definition";
 const MACRO_FUNCTION_DEFINITION = "preproc_function_def";
@@ -23,7 +38,7 @@ const CLASS_IDENTIFIER = "type_identifier";
 const NAMESPACE_DEFINITION = "namespace_definition";
 const NAMESPACE_IDENTIFIER = "identifier";
 const TEMPLATE_DECLARATION = "template_declaration";
-const TEMPLATE_SPECIALIZATION = "template_type";
+const TEMPLATE_SPECIALIZATION = "template_type";  // template<> struct A<int> => A<int>
 const STATIC_SPECIFIER = "storage_class_specifier";
 const VIRTUAL_SPECIFIER = "virtual_function_specifier";
 
@@ -91,16 +106,16 @@ const extractAdditionalFunctionProperties: (functionNode: SyntaxNode) => Functio
     // Check for template functions.
     if (functionNode.parent) {
         if (functionNode.parent.type === TEMPLATE_DECLARATION) {
-            properties.push('template');
+            properties.push(TEMPLATE_KEYWORD);
         }
     }
     // Check for function specifiers in children.
     for (const child of functionNode.namedChildren) {
-        if (child.type === STATIC_SPECIFIER && child.text === 'static') {
-            properties.push('static');
+        if (child.type === STATIC_SPECIFIER && child.text === STATIC_KEYWORD) {
+            properties.push(STATIC_KEYWORD);
         }
-        if (child.type === VIRTUAL_SPECIFIER && child.text === 'virtual') {
-            properties.push('virtual');
+        if (child.type === VIRTUAL_SPECIFIER && child.text === VIRTUAL_KEYWORD) {
+            properties.push(VIRTUAL_KEYWORD);
         }
     }
     return properties;
@@ -115,11 +130,10 @@ const convertFunctionDefinitionNode: (node: SyntaxNode) => CppFunction = (node) 
     let properties: FunctionProperty[] = [];
     if (node.type === MACRO_FUNCTION_DEFINITION) {
         functionName = getMacroFunctionName(node);
-        properties.push('macro');
+        properties.push(MACRO_KEYWORD);
         // Macro functions will always end at the next detected symbol.
         // Therefore, we exclude the line of the next symbol.
-        // Note: We adjust by +1 to be 1-indexed and then subtract 1.
-        end = (node.endPosition.row + 1) - 1;
+        end -= 1;
     } else {
         functionName = getFunctionName(node);
         className = getParentClassName(node);
@@ -135,9 +149,9 @@ const convertFunctionDefinitionNode: (node: SyntaxNode) => CppFunction = (node) 
                 properties.push(keyword);
             }
         };
-        replaceKeywordFromName('override');
-        replaceKeywordFromName('volatile');
-        replaceKeywordFromName('const');
+        replaceKeywordFromName(OVERRIDE_KEYWORD);
+        replaceKeywordFromName(VOLATILE_KEYWORD);
+        replaceKeywordFromName(CONST_KEYWORD);
         properties = properties.concat(extractAdditionalFunctionProperties(node));
     }
 
