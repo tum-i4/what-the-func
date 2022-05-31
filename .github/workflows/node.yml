@@ -40,12 +40,23 @@ jobs:
     - name: Test
       run: npm run test
 
-    - name: Package
+    - name: Package (Linux)
       if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' }}
-      run: npm run package
+      run: |
+        npm run package -- --out-path ./bin/what-the-func-linux --targets linux-x64
+
+    - name: Package (macOS)
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.os == 'macos-latest' }}
+      run: |
+        npm run package -- --out-path ./bin/what-the-func-mac --targets macos-x64
+
+    - name: Package (Windows)
+      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.os == 'windows-2019' }}
+      run: |
+        npm run package -- --out-path ./bin/what-the-func-win.exe --targets win-x64
 
     - name: Release
-      if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
       uses: softprops/action-gh-release@v1
       with:
         files: bin/*
