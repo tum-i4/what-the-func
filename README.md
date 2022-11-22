@@ -1,9 +1,10 @@
 # What the func?! - A simple C++ function parser/tagger
 
+![example workflow](https://github.com/tum-i4/what-the-func/actions/workflows/node.yml/badge.svg)
+
 This project implements a simple C++ function parser, `what-the-func`, based on the [tree-sitter](https://tree-sitter.github.io/) [C++ grammar](https://github.com/tree-sitter/tree-sitter-cpp).
 Similar to source code taggers such as `ctags`, `what-the-func` can be used to detect all function definitions in C++ source files as required, e.g., for function-level regression test selection.
 The main advantage of `what-the-func` is its robustness towards syntax problems (as opposed to solutions using `clang` or `gcc`), allowing to analyze arbitrary single source files without providing compiler flags (e.g., to resolve `#include`s).
-Also, `what-the-func` can be used on any major OS and supports recent C++ language constructs that [`ctags` often misses](https://github.com/universal-ctags/ctags/issues/3388).
 
 ## Build
 
